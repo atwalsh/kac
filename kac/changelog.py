@@ -15,7 +15,7 @@ class Changelog:
     _unreleased_tag_re_pattern: str = f'\\#\\#\\s\\[Unreleased\\].*'
     # Changelog version and diff URL base strings
     _version_pattern: str = '{0}.{1}.{2}'
-    _version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version}'
+    _version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
     # Default Changelog file name
     default_file_name: str = 'changelog.md'
 
@@ -84,6 +84,7 @@ class Changelog:
                     out.write(new_line.encode())
                     new_diff_url = self._version_diff_pattern.format(
                         new_version=self.format_version(new_version, include_v=False),
+                        new_version_end=self.format_version(new_version),
                         current_version=self.format_version((self.major, self.minor, self.patch)),
                         base_url=re.search("(?P<url>https?://[^\\s]+)", line).group("url").rsplit('/', 1)[0]
                     )
