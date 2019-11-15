@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2019-11-14
+### Fixed
+- Bug where `v` character would not be added to end of version compare URL
+
 ## [0.1.1] - 2019-11-14
 ### Added
 - `install_requires` argument in setup.py
@@ -14,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - This Changelog and initial project files
 
-[Unreleased]: https://github.com/atwalsh/kac/compare/v0.1.1...master
-[0.1.1]: https://github.com/atwalsh/kac/compare/v0.1.0...0.1.1
+[Unreleased]: https://github.com/atwalsh/kac/compare/v0.1.2...master
+[0.1.2]: https://github.com/atwalsh/kac/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/atwalsh/kac/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/atwalsh/kac/releases/tag/v0.1.0
