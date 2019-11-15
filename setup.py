@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='kac',
-    version='0.1.1',
+    version='0.1.2',
     author="Adam Walsh",
     author_email="adam@grid.sh",
     description="Automatic version bumping for Keep-a-Changelog style Changelog files.",
