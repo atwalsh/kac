@@ -34,6 +34,7 @@ Assuming you have a Changelog file at v3.6.2 name `CHANGELOG.md` in your current
    ```
    
 ## Limitations
+- Assumes you have changes in the "Unreleased" section 
 - Only works for semver
 - Only supports versions in the `MAJOR.MINOR.PATCH` format. A beta version ending in `-beta`, for example, 
 will fail.
