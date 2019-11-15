@@ -13,6 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/atwalsh/kac",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'click==7.0',
+        'questionary==1.3.0'
+    ],
     entry_points='''
         [console_scripts]
         kac=kac.kac:main
