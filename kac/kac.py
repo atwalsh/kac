@@ -17,11 +17,11 @@ def main(filename):
         end()
     # Confirm selected new version
     should_bump: bool = questionary.confirm(
-        message=f'Bump Changelog to {new_v_num}?'
+        message=f'Bump Changelog to v{new_v_num}?'
     ).ask()
     # Bump or end
     c.bump(c.available_new_versions[new_v_num]) if should_bump is True else end()
-    click.echo(f'Bumped to {new_v_num}!')
+    click.echo(f'Bumped to v{new_v_num}!')
 
 
 def end():
