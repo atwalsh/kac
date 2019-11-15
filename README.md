@@ -1,4 +1,4 @@
-## KAC (Keep-a-Changelog)
+## kac
 A command line tool for bumping Changelogs that follow the [Keep A Changelog][1] standard.
 
 ### Install
