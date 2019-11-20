@@ -38,9 +38,9 @@ Assuming you have a Changelog file at v3.6.2 name `CHANGELOG.md` in your current
 - Only works for semver
 - Only supports versions in the `MAJOR.MINOR.PATCH` format. A beta version ending in `-beta`, for example, 
 will fail.
-- Requires Python 3.8.0
 
 ## To-Do
+- [ ] Add tests
 - [ ] Add support for generating an empty Changelog template
 - [ ] Undo bump
 - [ ] Support labels for pre-release and build metadata

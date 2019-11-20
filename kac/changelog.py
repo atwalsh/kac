@@ -36,7 +36,8 @@ class Changelog:
         :return: Full path of the Changelog file.
         """
         files = [filename for filename in os.listdir(os.getcwd()) if filename.lower() == f_name.lower()]
-        if (num_files := len(files)) > 1:
+        num_files = len(files)
+        if num_files > 1:
             raise Exception(f'Found multiple Changelog files. {num_files} files found.')
         elif num_files == 0:
             raise Exception('No Changelog file found.')
@@ -52,7 +53,8 @@ class Changelog:
         pattern = re.compile(self._version_re_pattern)
         with open(self.changelog_file_path) as f:
             for line_n, line in enumerate(f, 1):
-                if match := pattern.match(line):
+                match = pattern.match(line)
+                if match:
                     g = match.groups()
                     try:
                         return int(g[0]), int(g[1]), int(g[2]), line_n

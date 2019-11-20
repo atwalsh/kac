@@ -21,5 +21,5 @@ setuptools.setup(
         [console_scripts]
         kac=kac.kac:main
     ''',
-    python_requires='>=3.8',
+    python_requires='>=3.6',
 )
