@@ -28,6 +28,20 @@ class Changelog:
     def __repr__(self):
         return f'<Changelog v{self.major}.{self.minor}.{self.patch}>'
 
+    @classmethod
+    def parse_version_number(cls, val: str) -> Tuple[int, int, int]:
+        """
+        Parse a version number. Supports vX.X.X and X.X.X formats.
+        :param val: The version number to parse.
+        :return: Tuple of ints representing the version.
+        """
+        pattern = re.compile(cls._version_re_pattern)
+        match = pattern.match(val)
+        if match is None:
+            raise ValueError('Invalid version number.')
+        groups = match.groups()
+        return (int(groups[0]), int(groups[1]), int(groups[2]))
+
     @staticmethod
     def _get_changelog_file_path(f_name: str) -> str:
         """
