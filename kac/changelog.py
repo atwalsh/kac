@@ -23,7 +23,7 @@ class Changelog:
 
     def __init__(self, changelog_file_name: str = default_file_name):
         self.changelog_file_path = self._get_changelog_file_path(changelog_file_name)
-        self.major, self.minor, self.patch, self.version_line_number = self._get_most_recent_version()
+        self.major, self.minor, self.patch = self._get_most_recent_version()
 
     def __repr__(self):
         return f'<Changelog v{self.major}.{self.minor}.{self.patch}>'
