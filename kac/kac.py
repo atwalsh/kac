@@ -4,9 +4,25 @@ import questionary
 from .changelog import Changelog
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument('filename', type=click.Path(exists=True), default=Changelog.default_file_name)
-def main(filename):
+@click.option('-v', '--version', 'version', default=Changelog.LATEST, required=True)
+def copy(filename, version):
+    """Copy a version's tag text."""
+    v = Changelog.parse_version_number(version)
+    c = Changelog(filename)
+    c.copy_tag_text(v)
+
+
+@cli.command()
+@click.argument('filename', type=click.Path(exists=True), default=Changelog.default_file_name)
+def bump(filename):
+    """Bump a Changelog."""
     c = Changelog(filename)
     # Ask user to select new version
     new_v_num: str = questionary.select(
