@@ -40,7 +40,7 @@ class Changelog:
         pattern = re.compile(cls._version_re_pattern)
         match = pattern.match(val)
         if match is None:
-            raise ValueError('Invalid version number.')
+            raise ValueError(f'Invalid version number {val}')
         groups = match.groups()
         return (int(groups[0]), int(groups[1]), int(groups[2]))
 
