@@ -59,21 +59,21 @@ class Changelog:
             raise Exception('No Changelog file found.')
         return os.path.abspath(files[0])
 
-    def _get_most_recent_version(self) -> Tuple[int, int, int, int]:
+    def _get_most_recent_version(self) -> Tuple[int, int, int]:
         """
         Get the most recent version from the Changelog file.
 
         :rtype: (int, int, int)
         :return: Three ints, representing major, minor, and patch version numbers.
         """
-        pattern = re.compile(self._version_re_pattern)
+        pattern = re.compile(self._version_title_re_pattern)
         with open(self.changelog_file_path) as f:
-            for line_n, line in enumerate(f, 1):
+            for line in f:
                 match = pattern.match(line)
                 if match:
                     g = match.groups()
                     try:
-                        return int(g[0]), int(g[1]), int(g[2]), line_n
+                        return int(g[0]), int(g[1]), int(g[2])
                     except ValueError:
                         raise Exception('Invalid version number, could not convert to int.')
 
