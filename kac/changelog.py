@@ -3,7 +3,9 @@ import re
 from datetime import date
 from shutil import move
 from tempfile import NamedTemporaryFile
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
+
+import pyperclip
 
 rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  # Reverse replace
 
@@ -115,6 +117,33 @@ class Changelog:
                     out.write(line.encode())
         move(out.name, self.changelog_file_path)  # Move the temp file to the current Changelog file location
         out.close()  # Close temp file
+
+    def copy_tag_text(self, v: Union[LATEST, Tuple[int, int, int]] = LATEST) -> None:
+        """
+        Copy the requested version's tag text to the clipboard.
+
+        :param v: The version to copy tag text for.
+        :return: Nothing.
+        """
+        version: Tuple[int, int, int] = self._get_most_recent_version() if v == self.LATEST else v
+        save_lines = False
+        text = ''
+        pattern = re.compile(self._version_title_re_pattern)
+        with open(self.changelog_file_path) as f:
+            for line in f:
+                if save_lines:
+                    if not line.strip():
+                        save_lines = False
+                    else:
+                        text += line
+                else:
+                    match = pattern.match(line)
+                    if match and self.parse_version_number(
+                            f'{match.groups()[0]}.{match.groups()[1]}.{match.groups()[2]}') == version:
+                        save_lines = True
+        if not text:
+            raise LookupError(f'Could not find version number {self.format_version(v, include_v=True)}')
+        return pyperclip.copy(text)
 
     def format_version(self, v: Tuple[int, int, int], include_v: bool = True) -> str:
         """
