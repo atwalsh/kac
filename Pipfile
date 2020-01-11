@@ -9,6 +9,7 @@ setuptools = "*"
 [packages]
 click = "*"
 questionary = "*"
+pyperclip = "*"
 
 [requires]
 python_version = "3.6"
