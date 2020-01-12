@@ -5,6 +5,7 @@ from shutil import move
 from tempfile import NamedTemporaryFile
 from typing import Tuple, Dict, Union
 
+import click
 import pyperclip
 
 rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  # Reverse replace
@@ -143,7 +144,8 @@ class Changelog:
                         save_lines = True
         if not text:
             raise LookupError(f'Could not find version number {self.format_version(v, include_v=True)}')
-        return pyperclip.copy(text)
+        pyperclip.copy(text)
+        click.echo(f'{self.format_version(version, include_v=True)} release text copied to clipboard!')
 
     def format_version(self, v: Tuple[int, int, int], include_v: bool = True) -> str:
         """
