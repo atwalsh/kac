@@ -15,11 +15,12 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'click==7.0',
-        'questionary==1.3.0'
+        'pyperclip==1.7.0',
+        'questionary==1.4.0'
     ],
     entry_points='''
         [console_scripts]
-        kac=kac.kac:main
+        kac=kac.kac:cli
     ''',
     python_requires='>=3.6',
 )

@@ -3,28 +3,46 @@ import re
 from datetime import date
 from shutil import move
 from tempfile import NamedTemporaryFile
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
+
+import pyperclip
 
 rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  # Reverse replace
 
 
 class Changelog:
     # Regex patterns
-    _version_re_pattern: str = '\\#\\#\\s\\[(\\d)\\.(\\d)\\.(\\d+)\\].*'
-    _unreleased_url_re_pattern: str = '\\[Unreleased\\]:'
-    _unreleased_tag_re_pattern: str = f'\\#\\#\\s\\[Unreleased\\].*'
+    _version_title_re_pattern: str = '\#\#\s\[(\d)\.(\d)\.(\d+)\].*'
+    _version_re_pattern: str = 'v?(\d+)\.(\d+)\.(\d+)'
+    _unreleased_url_re_pattern: str = '\[Unreleased\]:'
+    _unreleased_tag_re_pattern: str = f'\#\#\s\[Unreleased\].*'
     # Changelog version and diff URL base strings
     _version_pattern: str = '{0}.{1}.{2}'
     _version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
     # Default Changelog file name
     default_file_name: str = 'changelog.md'
+    LATEST = 'LATEST'
 
     def __init__(self, changelog_file_name: str = default_file_name):
         self.changelog_file_path = self._get_changelog_file_path(changelog_file_name)
-        self.major, self.minor, self.patch, self.version_line_number = self._get_most_recent_version()
+        self.major, self.minor, self.patch = self._get_most_recent_version()
 
     def __repr__(self):
         return f'<Changelog v{self.major}.{self.minor}.{self.patch}>'
+
+    @classmethod
+    def parse_version_number(cls, val: str) -> Tuple[int, int, int]:
+        """
+        Parse a version number. Supports vX.X.X and X.X.X formats.
+        :param val: The version number to parse.
+        :return: Tuple of ints representing the version.
+        """
+        pattern = re.compile(cls._version_re_pattern)
+        match = pattern.match(val)
+        if match is None:
+            raise ValueError(f'Invalid version number {val}')
+        groups = match.groups()
+        return (int(groups[0]), int(groups[1]), int(groups[2]))
 
     @staticmethod
     def _get_changelog_file_path(f_name: str) -> str:
@@ -43,21 +61,21 @@ class Changelog:
             raise Exception('No Changelog file found.')
         return os.path.abspath(files[0])
 
-    def _get_most_recent_version(self) -> Tuple[int, int, int, int]:
+    def _get_most_recent_version(self) -> Tuple[int, int, int]:
         """
         Get the most recent version from the Changelog file.
 
         :rtype: (int, int, int)
         :return: Three ints, representing major, minor, and patch version numbers.
         """
-        pattern = re.compile(self._version_re_pattern)
+        pattern = re.compile(self._version_title_re_pattern)
         with open(self.changelog_file_path) as f:
-            for line_n, line in enumerate(f, 1):
+            for line in f:
                 match = pattern.match(line)
                 if match:
                     g = match.groups()
                     try:
-                        return int(g[0]), int(g[1]), int(g[2]), line_n
+                        return int(g[0]), int(g[1]), int(g[2])
                     except ValueError:
                         raise Exception('Invalid version number, could not convert to int.')
 
@@ -99,6 +117,33 @@ class Changelog:
                     out.write(line.encode())
         move(out.name, self.changelog_file_path)  # Move the temp file to the current Changelog file location
         out.close()  # Close temp file
+
+    def copy_tag_text(self, v: Union[LATEST, Tuple[int, int, int]] = LATEST) -> None:
+        """
+        Copy the requested version's tag text to the clipboard.
+
+        :param v: The version to copy tag text for.
+        :return: Nothing.
+        """
+        version: Tuple[int, int, int] = self._get_most_recent_version() if v == self.LATEST else v
+        save_lines = False
+        text = ''
+        pattern = re.compile(self._version_title_re_pattern)
+        with open(self.changelog_file_path) as f:
+            for line in f:
+                if save_lines:
+                    if not line.strip():
+                        save_lines = False
+                    else:
+                        text += line
+                else:
+                    match = pattern.match(line)
+                    if match and self.parse_version_number(
+                            f'{match.groups()[0]}.{match.groups()[1]}.{match.groups()[2]}') == version:
+                        save_lines = True
+        if not text:
+            raise LookupError(f'Could not find version number {self.format_version(v, include_v=True)}')
+        return pyperclip.copy(text)
 
     def format_version(self, v: Tuple[int, int, int], include_v: bool = True) -> str:
         """

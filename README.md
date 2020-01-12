@@ -1,45 +1,30 @@
 ## kac
-A command line tool for bumping Changelogs that follow the [Keep A Changelog][1] standard.
+A command line tool for CHANGELOG files that follow the [Keep A Changelog][1] standard.
 
-### Install
+### Usage
+Run `kac` in the same directory as your Changelog. By default, `kac` looks for a file called `CHANGELOG.md` 
+(case-insensitive).
+
 ```bash
-pip install kac
+Usage: kac [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  bump  Bump a Changelog.
+  copy  Copy a version's tag text.
 ```
 
-### Run
-Run `kac` in the same directory as your Changelog, or pass the filepath as an argument. By default, `kac` looks for a 
-file called `CHANGELOG.md` (case-insensitive).
-
-### Example
-Assuming you have a Changelog file at v3.6.2 name `CHANGELOG.md` in your current directory.
-
-1. Run `kac`
-    ```bash
-    $ kac
-    ```
-2. Choose a bump version
-    ```bash
-    ? Please select a new version (currently v3.6.2)  (Use arrow keys)
-       v3.6.3
-     » v3.7.0
-       v4.0.0
-    ```
-3. Confirm version bump (Y / Enter)
-    ```bash
-    ? Bump Changelog to v3.7.0? (Y/n)
-    ```
-4. Changelog bumped
-   ```bash
-   Changelog bumped to v3.7.0!
-   ```
-   
 ## Limitations
+- Must be run in the same directory as your CHANGELOG file
 - Assumes you have changes in the "Unreleased" section 
 - Only works for semver
 - Only supports versions in the `MAJOR.MINOR.PATCH` format. A beta version ending in `-beta`, for example, 
 will fail.
 
 ## To-Do
+- [ ] Add default text for versions with no notable changes
 - [ ] Add tests
 - [ ] Add support for generating an empty Changelog template
 - [ ] Undo bump
