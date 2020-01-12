@@ -13,7 +13,7 @@ def cli():
 @click.argument('filename', type=click.Path(exists=True), default=Changelog.default_file_name)
 @click.option('-v', '--version', 'version', default=Changelog.LATEST, required=True)
 def copy(filename, version):
-    """Copy a version's tag text."""
+    """Copy a version's release text."""
     c = Changelog(filename)
     v = version
     if v != Changelog.LATEST:
@@ -21,7 +21,7 @@ def copy(filename, version):
             v = Changelog.parse_version_number(version)
         except ValueError as e:
             raise click.UsageError(str(e))
-    c.copy_tag_text(v)
+    c.copy_release_text(v)
 
 
 @cli.command()

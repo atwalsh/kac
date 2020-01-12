@@ -118,11 +118,11 @@ class Changelog:
         move(out.name, self.changelog_file_path)  # Move the temp file to the current Changelog file location
         out.close()  # Close temp file
 
-    def copy_tag_text(self, v: Union[LATEST, Tuple[int, int, int]] = LATEST) -> None:
+    def copy_release_text(self, v: Union[LATEST, Tuple[int, int, int]] = LATEST) -> None:
         """
-        Copy the requested version's tag text to the clipboard.
+        Copy the requested version's release text to the clipboard.
 
-        :param v: The version to copy tag text for.
+        :param v: The version to copy release text for.
         :return: Nothing.
         """
         version: Tuple[int, int, int] = self._get_most_recent_version() if v == self.LATEST else v
