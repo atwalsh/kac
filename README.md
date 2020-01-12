@@ -13,7 +13,7 @@ Options:
 
 Commands:
   bump  Bump a Changelog.
-  copy  Copy a version's tag text.
+  copy  Copy a version's release text.
 ```
 
 ## Limitations
