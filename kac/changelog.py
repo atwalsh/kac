@@ -133,7 +133,7 @@ class Changelog:
         with open(self.changelog_file_path) as f:
             for line in f:  # Run through each line of the CHANGELOG
                 if save_lines:
-                    # Stop saving release text ff the line matches the release title regex pattern
+                    # Stop saving release text if the line matches the release title regex pattern
                     if pattern.match(line):
                         save_lines = False
                     # Add the line to the release text we need to copy
