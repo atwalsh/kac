@@ -127,14 +127,16 @@ class Changelog:
         :return: Nothing.
         """
         version: Tuple[int, int, int] = self._get_most_recent_version() if v == self.LATEST else v
-        save_lines = False
+        save_lines = False  # Whether or not we should be saving lines
         text = ''
         pattern = re.compile(self._version_title_re_pattern)
         with open(self.changelog_file_path) as f:
-            for line in f:
+            for line in f:  # Run through each line of the CHANGELOG
                 if save_lines:
-                    if not line.strip():
+                    # Stop saving release text ff the line matches the release title regex pattern
+                    if pattern.match(line):
                         save_lines = False
+                    # Add the line to the release text we need to copy
                     else:
                         text += line
                 else:
