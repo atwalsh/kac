@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='kac',
-    version='0.2.1',
+    version='0.2.2',
     author="Adam Walsh",
     author_email="adam@grid.sh",
-    description="Automatic version bumping for Keep-a-Changelog style Changelog files.",
+    description="A command line tool for CHANGELOG files that follow the Keep-a-Changelog standard.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/atwalsh/kac",
