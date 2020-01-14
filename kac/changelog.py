@@ -13,7 +13,7 @@ rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  
 
 class Changelog:
     # Regex patterns
-    _version_title_re_pattern: str = '\#\#\s\[(\d)\.(\d)\.(\d+)\].*'
+    _version_title_re_pattern: str = '\#\#\s\[(\d+)\.(\d+)\.(\d+)\].*'
     _version_re_pattern: str = 'v?(\d+)\.(\d+)\.(\d+)'
     _unreleased_url_re_pattern: str = '\[Unreleased\]:'
     _unreleased_tag_re_pattern: str = f'\#\#\s\[Unreleased\].*'
