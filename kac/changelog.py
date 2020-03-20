@@ -146,7 +146,7 @@ class Changelog:
                         save_lines = True
         if not text:
             raise LookupError(f'Could not find version number {self.format_version(v, include_v=True)}')
-        pyperclip.copy(text)
+        pyperclip.copy(text.rstrip('\n '))
         click.echo(f'{self.format_version(version, include_v=True)} release text copied to clipboard!')
 
     def format_version(self, v: Tuple[int, int, int], include_v: bool = True) -> str:
