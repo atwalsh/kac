@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='kac',
-    version='0.2.2',
+    version='0.2.3',
     author="Adam Walsh",
     author_email="adam@grid.sh",
     description="A command line tool for CHANGELOG files that follow the Keep-a-Changelog standard.",
