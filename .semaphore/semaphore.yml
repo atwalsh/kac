@@ -1,0 +1,45 @@
+version: v1.0
+name: Tests
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+auto_cancel:
+  running:
+    when: "true"
+blocks:
+  - name: Install dependencies
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          - poetry --version
+          - checkout
+      jobs:
+        - name: Install and cache dependencies
+          commands:
+            - cache restore poetry-$SEMAPHORE_GIT_BRANCH-$(checksum poetry.lock),poetry-$SEMAPHORE_GIT_BRANCH,poetry-master
+            - poetry install --no-root
+            - cache store poetry-$SEMAPHORE_GIT_BRANCH-$(checksum poetry.lock) .venv
+  - name: Check CHANGELOG
+    dependencies: []
+    task:
+      jobs:
+        - name: Check if CHANGELOG is modified
+          commands:
+            - checkout
+            - if [[ $SEMAPHORE_GIT_REF_TYPE == "pull-request" ]]; then git diff remotes/origin/master --name-only | grep CHANGELOG.md; else echo "Skipping CHANGELOG check"; fi
+  - name: Run tests
+    dependencies: ["Install dependencies"]
+    task:
+      prologue:
+        commands:
+          - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          - poetry --version
+          - checkout
+          - cache restore poetry-$SEMAPHORE_GIT_BRANCH-$(checksum poetry.lock),poetry-$SEMAPHORE_GIT_BRANCH,poetry-master
+      jobs:
+        - name: All tests
+          commands:
+            - poetry run pytest
