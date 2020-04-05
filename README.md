@@ -1,6 +1,8 @@
 ## kac
 A command line tool for CHANGELOG files that follow the [Keep A Changelog][1] standard.
 
+![semaphore badge](https://atwalsh.semaphoreci.com/badges/kac.svg?style=shields "SemaphoreCI status badge")
+
 ### Usage
 Run `kac` in the same directory as your Changelog. By default, `kac` looks for a file called `CHANGELOG.md` 
 (case-insensitive).
