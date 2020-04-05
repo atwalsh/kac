@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "kac"
+version = "0.2.3"
+description = "A command line tool for CHANGELOG files that follow the Keep-a-Changelog standard."
+authors = ["Adam Walsh <adam@grid.sh>"]
+license = "MIT"
+homepage = "https://github.com/atwalsh/kac"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+click = "^7.1.1"
+questionary = "^1.5.1"
+pyperclip = "^1.8.0"
+jinja2 = "^2.11.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.1"
+
+[tool.poetry.scripts]
+kac = "kac.kac:cli"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
