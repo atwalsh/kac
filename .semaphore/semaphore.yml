@@ -14,6 +14,7 @@ blocks:
       prologue:
         commands:
           - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          - source $HOME/.poetry/env
           - poetry --version
           - checkout
       jobs:
@@ -36,6 +37,7 @@ blocks:
       prologue:
         commands:
           - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          - source $HOME/.poetry/env
           - poetry --version
           - checkout
           - cache restore poetry-$SEMAPHORE_GIT_BRANCH-$(checksum poetry.lock),poetry-$SEMAPHORE_GIT_BRANCH,poetry-master
