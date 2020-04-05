@@ -14,8 +14,10 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  bump  Bump a Changelog.
-  copy  Copy a version's release text.
+  bump      Bump a Changelog.
+  copy      Copy a version's release text.
+  template  Create an empty CHANGELOG.md file.            
+
 ```
 
 ## Limitations
