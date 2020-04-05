@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `template` command
 - Initial basic tests with SemaphoreCI integration
+- Automatic releases to PyPI on git tags
 
 ### Changed
 - Use poetry instead of pipenv

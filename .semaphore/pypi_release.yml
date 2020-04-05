@@ -1,0 +1,26 @@
+version: v1.0
+name: Publish to PyPI
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Release kac
+    task:
+      env_vars:
+        - name: POETRY_VIRTUALENVS_IN_PROJECT
+          value: "true"
+      secrets:
+        - name: pypi-password
+      jobs:
+        - name: Publish kac
+          commands:
+            - sudo apt-get install -y python3-venv
+            - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+            - source $HOME/.poetry/env
+            - poetry --version
+            - checkout --use-cache
+            - cache restore poetry-$SEMAPHORE_GIT_BRANCH-$(checksum poetry.lock),poetry-$SEMAPHORE_GIT_BRANCH,poetry-master
+            - poetry install --no-root
+            - poetry build
+            - poetry publish -u atwalsh04 -p $PYPI_PASSWORD

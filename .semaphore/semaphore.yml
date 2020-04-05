@@ -53,3 +53,9 @@ blocks:
         - name: All tests
           commands:
             - poetry run pytest
+promotions:
+  - name: Publish to PyPI
+    pipeline_file: pypi_release.yml
+    auto_promote:
+      # Promote when tests pass and this build corresponds to a tag
+      when: "result = 'passed' AND  tag =~ '.*'"
