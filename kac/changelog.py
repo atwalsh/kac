@@ -13,15 +13,16 @@ rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  
 
 class Changelog:
     # Regex patterns
-    _version_title_re_pattern: str = '\#\#\s\[(\d+)\.(\d+)\.(\d+)\].*'
-    _version_re_pattern: str = 'v?(\d+)\.(\d+)\.(\d+)'
-    _unreleased_url_re_pattern: str = '\[Unreleased\]:'
-    _unreleased_tag_re_pattern: str = f'\#\#\s\[Unreleased\].*'
+    _version_title_re_pattern: str = r'\#\#\s\[(\d+)\.(\d+)\.(\d+)\].*'
+    _version_re_pattern: str = r'v?(\d+)\.(\d+)\.(\d+)'
+    _unreleased_url_re_pattern: str = r'\[Unreleased\]:'
+    _unreleased_tag_re_pattern: str = r'\#\#\s\[Unreleased\].*'
     # Changelog version and diff URL base strings
     _version_pattern: str = '{0}.{1}.{2}'
     _version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
     # Default Changelog file name
     default_file_name: str = 'changelog.md'
+    default_file_name_upper: str = 'CHANGELOG.md'
     LATEST = 'LATEST'
 
     def __init__(self, changelog_file_name: str = default_file_name):
