@@ -29,8 +29,6 @@ will fail.
 
 ## To-Do
 - [ ] Add default text for versions with no notable changes
-- [ ] Add tests
-- [ ] Add support for generating an empty Changelog template
 - [ ] Undo bump
 - [ ] Support labels for pre-release and build metadata
 
