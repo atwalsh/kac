@@ -39,7 +39,7 @@ def test_create_template_v0_0_1(monkeypatch):
     monkeypatch.setattr(AppSession, 'output', DummyOutput())
     monkeypatch.setattr(AppSession, 'input', DummyInput())
     runner = CliRunner()
-    with open(f'{os.getcwd()}/templates/changelog-v0-0-1.md', 'r') as exp_f:
+    with open(f'{Path(__file__).parent.resolve()}/templates/changelog-v0-0-1.md', 'r') as exp_f:
         expected_file_text = exp_f.read()
     with runner.isolated_filesystem() as _dir:
         mock_res = Mock()
