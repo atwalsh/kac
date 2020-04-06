@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kac"
-version = "0.2.3"
+version = "0.3.0"
 description = "A command line tool for CHANGELOG files that follow the Keep-a-Changelog standard."
 authors = ["Adam Walsh <adam@grid.sh>"]
 license = "MIT"
