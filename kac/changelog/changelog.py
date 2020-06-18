@@ -3,18 +3,19 @@ import re
 from datetime import date
 from shutil import move
 from tempfile import NamedTemporaryFile
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict, Union, List
 
 import click
 import pyperclip
 
-rreplace = lambda s, old, new, occurrence: new.join(s.rsplit(old, occurrence))  # Reverse replace
+from .release import Release
+from .section import Header, Body, Footer
+from .util import parse_version_number, rreplace
 
 
 class Changelog:
     # Regex patterns
     _version_title_re_pattern: str = r'\#\#\s\[(\d+)\.(\d+)\.(\d+)\].*'
-    _version_re_pattern: str = r'v?(\d+)\.(\d+)\.(\d+)'
     _unreleased_url_re_pattern: str = r'\[Unreleased\]:'
     _unreleased_tag_re_pattern: str = r'\#\#\s\[Unreleased\].*'
     # Changelog version and diff URL base strings
@@ -23,28 +24,22 @@ class Changelog:
     # Default Changelog file name
     default_file_name: str = 'changelog.md'
     default_file_name_upper: str = 'CHANGELOG.md'
-    LATEST = 'LATEST'
+    LATEST: str = 'LATEST'
 
     def __init__(self, changelog_file_name: str = default_file_name):
         self.changelog_file_path = self._get_changelog_file_path(changelog_file_name)
+        # Read full Changelog text
+        with open(self.changelog_file_path, 'r') as f:
+            self.full_text = f.read()
         self.major, self.minor, self.patch = self._get_most_recent_version()
+        # Set Changelog sections
+        self._header = Header(self.full_text)
+        self._body = Body(self.full_text)
+        self._footer = Footer(self.full_text)
+        self.releases: List[Release] = self._body.releases
 
     def __repr__(self):
         return f'<Changelog v{self.major}.{self.minor}.{self.patch}>'
-
-    @classmethod
-    def parse_version_number(cls, val: str) -> Tuple[int, int, int]:
-        """
-        Parse a version number. Supports vX.X.X and X.X.X formats.
-        :param val: The version number to parse.
-        :return: Tuple of ints representing the version.
-        """
-        pattern = re.compile(cls._version_re_pattern)
-        match = pattern.match(val)
-        if match is None:
-            raise ValueError(f'Invalid version number {val}')
-        groups = match.groups()
-        return (int(groups[0]), int(groups[1]), int(groups[2]))
 
     @staticmethod
     def _get_changelog_file_path(f_name: str) -> str:
@@ -71,15 +66,14 @@ class Changelog:
         :return: Three ints, representing major, minor, and patch version numbers.
         """
         pattern = re.compile(self._version_title_re_pattern)
-        with open(self.changelog_file_path) as f:
-            for line in f:
-                match = pattern.match(line)
-                if match:
-                    g = match.groups()
-                    try:
-                        return int(g[0]), int(g[1]), int(g[2])
-                    except ValueError:
-                        raise Exception('Invalid version number, could not convert to int.')
+        for line in self.full_text.splitlines():
+            match = pattern.match(line)
+            if match:
+                g = match.groups()
+                try:
+                    return int(g[0]), int(g[1]), int(g[2])
+                except ValueError:
+                    raise Exception('Invalid version number, could not convert to int.')
 
     def bump(self, new_version: Tuple[int, int, int]) -> None:
         """
@@ -142,7 +136,7 @@ class Changelog:
                         text += line
                 else:
                     match = pattern.match(line)
-                    if match and self.parse_version_number(
+                    if match and parse_version_number(
                             f'{match.groups()[0]}.{match.groups()[1]}.{match.groups()[2]}') == version:
                         save_lines = True
         if not text:

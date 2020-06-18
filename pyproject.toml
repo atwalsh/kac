@@ -7,11 +7,12 @@ license = "MIT"
 homepage = "https://github.com/atwalsh/kac"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "3.6"
 click = "^7.1.1"
 questionary = "^1.5.1"
 pyperclip = "^1.8.0"
 jinja2 = "^2.11.1"
+pendulum = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
