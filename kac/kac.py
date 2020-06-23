@@ -52,7 +52,7 @@ def bump(filename):
 
 
 @cli.command()
-def template():
+def new():
     """Create an empty CHANGELOG.md file."""
     # Fail if a CHANGELOG.md already exists
     if (len([filename for filename in os.listdir(os.getcwd()) if
