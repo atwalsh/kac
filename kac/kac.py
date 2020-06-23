@@ -5,6 +5,7 @@ import questionary
 from jinja2 import Environment, PackageLoader
 
 from .changelog import Changelog
+from .changelog.util import parse_version_number
 
 
 @click.group()
@@ -21,7 +22,7 @@ def copy(filename, version):
     v = version
     if v != Changelog.LATEST:
         try:
-            v = Changelog.parse_version_number(version)
+            v = parse_version_number(version)
         except ValueError as e:
             raise click.UsageError(str(e))
     c.copy_release_text(v)
