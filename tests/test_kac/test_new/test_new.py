@@ -9,7 +9,7 @@ from prompt_toolkit.output import DummyOutput
 from questionary.question import Question
 
 from kac.changelog import Changelog
-from kac.kac import template
+from kac.kac import new
 
 
 def test_file_exists():
@@ -27,7 +27,7 @@ def test_file_exists():
                 os.remove(f'{_dir}/{test_filenames[idx - 1]}')
             assert [f for f in os.listdir('.') if os.path.isfile(f)] == []
             Path(f'{_dir}/{f_name}').touch()
-            res = runner.invoke(template)
+            res = runner.invoke(new)
             assert res.exit_code == 1
             assert res.output == 'A CHANGELOG file already exists.\nAborted!\n'
 
@@ -39,14 +39,14 @@ def test_create_template_v0_0_1(monkeypatch):
     monkeypatch.setattr(AppSession, 'output', DummyOutput())
     monkeypatch.setattr(AppSession, 'input', DummyInput())
     runner = CliRunner()
-    with open(f'{Path(__file__).parent.resolve()}/templates/changelog-v0-0-1.md', 'r') as exp_f:
+    with open(f'{Path(__file__).parent.resolve()}/_templates/changelog-v0-0-1.md', 'r') as exp_f:
         expected_file_text = exp_f.read()
     with runner.isolated_filesystem() as _dir:
         mock_res = Mock()
         mock_res.side_effect = ['0.0.1', 'https://github.com/atwalsh/kac']
         patch('questionary.prompts.text.text', mock_res)
         monkeypatch.setattr(Question, 'ask', mock_res)
-        res = runner.invoke(template)
+        res = runner.invoke(new)
         assert res.exit_code == 0
         assert [f for f in os.listdir('.') if os.path.isfile(f)] == [Changelog.default_file_name_upper]
         with open(f'{_dir}/{Changelog.default_file_name_upper}') as act_f:
