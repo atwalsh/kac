@@ -9,7 +9,7 @@ class Body(Section):
     """
     Represents the body section of the Changelog, consisting of all release history for the Changelog.
     """
-    _regex_pattern = r'(#{2} \[([\S]*)\](?: - ([\d-]*)[\n\s])*)((#{3} \w+[\n\s]*(?:-[ \S]*[\n\s]+)*)+)*'
+    _regex_pattern = r'(## \[([\S]+)\](?: - ([\d-]+))?\s*)((?:#{3} \w+[\n\s]*(?:-[ \S]*[\n\s]+)*)*)'
 
     def __init__(self, full_changelog_text):
         super().__init__(full_changelog_text)
