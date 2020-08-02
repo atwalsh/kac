@@ -27,8 +27,8 @@ jobs:
       uses: actions/cache@v2
       with:
         path: .venv
-        key: ${{ runner.os }}-${{ github.ref }}-${{ hashFiles('poetry.lock') }}
+        key: ${{ hashFiles('poetry.lock') }}
     - name: Install dependencies
       run: poetry install --no-root
     - name: Test with pytest
-      run: poetry run pytest
+      run: pytest
