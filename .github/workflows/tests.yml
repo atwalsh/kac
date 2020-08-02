@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 env:
   POETRY_VIRTUALENVS_IN_PROJECT: "true"
-
 jobs:
   run-tests:
     runs-on: ubuntu-latest
@@ -20,6 +19,7 @@ jobs:
     - name: Install Poetry
       run: |
         curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        export PATH="$HOME/.poetry/bin:$PATH"
         source $HOME/.poetry/env
         poetry --version
     - name: Cache dependencies
