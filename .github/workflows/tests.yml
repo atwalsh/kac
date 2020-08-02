@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   POETRY_VIRTUALENVS_IN_PROJECT: "true"
-
+  PATH: "$HOME/.poetry/bin:$PATH"
 jobs:
   run-tests:
     runs-on: ubuntu-latest
