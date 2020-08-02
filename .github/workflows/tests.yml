@@ -1,0 +1,34 @@
+name: Tests
+
+on: [push, pull_request]
+
+env:
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Poetry
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        echo "::add-path::$HOME/.poetry/bin"
+        source $HOME/.poetry/env
+        poetry --version
+    - name: Cache dependencies
+      id: check-dependency-cache
+      uses: actions/cache@v2
+      with:
+        path: .venv
+        key: ${{ hashFiles('poetry.lock') }}
+    - name: Install dependencies
+      run: poetry install --no-root
+    - name: Test with pytest
+      run: poetry run pytest
