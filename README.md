@@ -16,8 +16,7 @@ Options:
 Commands:
   bump      Bump a Changelog.
   copy      Copy a version's release text.
-  template  Create an empty CHANGELOG.md file.            
-
+  new       Create an empty CHANGELOG.md file.            
 ```
 
 ## Limitations
