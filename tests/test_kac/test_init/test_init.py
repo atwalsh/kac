@@ -9,10 +9,10 @@ from prompt_toolkit.output import DummyOutput
 from questionary.question import Question
 
 from kac.changelog import Changelog
-from kac.kac import new
+from kac.kac import init
 
 
-def test_file_exists():
+def test_file_exists(monkeypatch):
     """
     Test that the template command exists if a CHANGELOG file already exists.
     """
@@ -21,18 +21,21 @@ def test_file_exists():
     r_3_filename = r_1_filename.upper()  # CHANGELOG.md
     test_filenames = (r_1_filename, r_2_filename, r_3_filename,)
     runner = CliRunner()
+
     with runner.isolated_filesystem() as _dir:
         for idx, f_name in enumerate(test_filenames):
             if idx > 0:
                 os.remove(f'{_dir}/{test_filenames[idx - 1]}')
             assert [f for f in os.listdir('.') if os.path.isfile(f)] == []
             Path(f'{_dir}/{f_name}').touch()
-            res = runner.invoke(new)
+            res = runner.invoke(init)
             assert res.exit_code == 1
-            assert res.output == 'A CHANGELOG file already exists.\nAborted!\n'
+            assert res.output == f'The CHANGELOG file already exists!\nAborted!\n'
+
+    # TODO check file open `x` mode
 
 
-def test_create_template_v0_0_1(monkeypatch):
+def test_init_template_v0_0_1(monkeypatch):
     """
     Test that we can successfully create a empty v0.0.1 CHANGELOG template.
     """
@@ -46,8 +49,22 @@ def test_create_template_v0_0_1(monkeypatch):
         mock_res.side_effect = ['0.0.1', 'https://github.com/atwalsh/kac']
         patch('questionary.prompts.text.text', mock_res)
         monkeypatch.setattr(Question, 'ask', mock_res)
-        res = runner.invoke(new)
+        res = runner.invoke(init)
         assert res.exit_code == 0
         assert [f for f in os.listdir('.') if os.path.isfile(f)] == [Changelog.default_file_name_upper]
         with open(f'{_dir}/{Changelog.default_file_name_upper}') as act_f:
             assert act_f.read() == expected_file_text
+
+
+def test_init_bad_version(monkeypatch):
+    monkeypatch.setattr(AppSession, 'output', DummyOutput())
+    monkeypatch.setattr(AppSession, 'input', DummyInput())
+    runner = CliRunner()
+    with runner.isolated_filesystem() as _dir:
+        mock_res = Mock()
+        mock_res.side_effect = ['bad_version', 'https://github.com/atwalsh/kac']
+        patch('questionary.prompts.text.text', mock_res)
+        monkeypatch.setattr(Question, 'ask', mock_res)
+        res = runner.invoke(init)
+        assert res.exit_code == 1
+        assert res.output == 'Invalid Semantic Version number: bad_version\nAborted!\n'
