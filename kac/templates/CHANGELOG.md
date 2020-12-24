@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [{{initial_release}}]
 
 
-[Unreleased]: {{repo_url}}/compare/v0.0.1...HEAD
+[Unreleased]: {{repo_url}}/compare/v{{initial_release}}...HEAD
 [{{initial_release}}]: {{repo_url}}/releases/tag/v{{initial_release}}
