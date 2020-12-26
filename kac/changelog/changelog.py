@@ -29,7 +29,8 @@ class Changelog:
             with click.open_file(self.path) as f:
                 self.full_text = f.read()
         except FileNotFoundError:
-            click.echo()
+            click.echo('Invalid CHANGELOG file path.')
+            raise click.Abort
 
         # Parse CHANGELOG header, body, and footer
         m_file = re.fullmatch(r'([\s\S]+)(## \[Unreleased][\s\S]+)(\[Unreleased]:[\s\S]+)', self.full_text)
