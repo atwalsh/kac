@@ -1,191 +1,142 @@
-import os
 import re
-from datetime import date
-from shutil import move
-from tempfile import NamedTemporaryFile
-from typing import Tuple, Dict, Union, List
+from datetime import date, datetime
+from typing import Dict
 
 import click
-import pyperclip
+from semver import VersionInfo
 
-from .release import Release
-from .section import Header, Body, Footer
-from .util import parse_version_number, rreplace
+from .release import Release, Unreleased
+from .util import rreplace
 
 
 class Changelog:
-    # Regex patterns
-    _version_title_re_pattern: str = r'\#\#\s\[(\d+)\.(\d+)\.(\d+)\].*'
-    _unreleased_url_re_pattern: str = r'\[Unreleased\]:'
-    _unreleased_tag_re_pattern: str = r'\#\#\s\[Unreleased\].*'
-    # Changelog version and diff URL base strings
-    _version_pattern: str = '{0}.{1}.{2}'
-    _version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
-    # Default Changelog file name
-    default_file_name: str = 'changelog.md'
-    default_file_name_upper: str = 'CHANGELOG.md'
-    LATEST: str = 'LATEST'
+    default_file_name: str = 'CHANGELOG.md'
 
-    def __init__(self, changelog_file_name: str = default_file_name):
-        self.changelog_file_path = self._get_changelog_file_path(changelog_file_name)
+    def __init__(self, path: str):
+        """
+        :param path: The full file system path of the CHANGELOG file.
+
+        Attributes:
+            path        The full file system path of the CHANGELOG file.
+            full_text   Original CHANGELOG file text.
+            unreleased  Unreleased changes.
+            releases    List of Release objects for each published release in the CHANGELOG.
+        """
+        self.path = path
+
         # Read full Changelog text
-        with open(self.changelog_file_path, 'r') as f:
-            self.full_text = f.read()
-        self.major, self.minor, self.patch = self._get_most_recent_version()
-        # Set Changelog sections
-        self._header = Header(self.full_text)
-        self._body = Body(self.full_text)
-        self._footer = Footer(self.full_text)
-        self.releases: List[Release] = self._body.releases
+        try:
+            with click.open_file(self.path) as f:
+                self.full_text = f.read()
+        except FileNotFoundError:
+            click.echo()
+
+        # Parse CHANGELOG header, body, and footer
+        m_file = re.fullmatch(r'([\s\S]+)(## \[Unreleased][\s\S]+)(\[Unreleased]:[\s\S]+)', self.full_text)
+        self._header_text, self._body_text, self._footer_text = m_file.groups()  # type: str, str, str
+
+        # Parse Unreleased section
+        m_unreleased = re.match(r'## \[Unreleased]\n((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)', self._body_text)
+        if m_unreleased is None:
+            click.echo('Unable to match CHANGELOG `Unreleased` section.')
+            raise click.Abort
+        # if m_unreleased.groups()[0].strip() != '':
+        self.unreleased = Unreleased(**Unreleased.changes_to_dict(m_unreleased.groups()[0].strip()))
+
+        # Parse releases from the body section
+        self.releases = []
+        m_releases = re.findall(r'(?:## \[([\S]+)] - ([\d-]+)\s*)((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)?',
+                                self._body_text)
+        version_ids = [r[0] for r in m_releases]  # ex: ['Unreleased', '1.0.0', '0.9.0', ...]
+        # Parse changes from each release
+        for v, d, c in m_releases:  # type: str, str, str # version, date, changes
+            c = c.strip()
+            self.releases.append(Release(
+                **Release.changes_to_dict(c),
+                release_date=datetime.strptime(d, '%Y-%m-%d').date(),
+                version=VersionInfo.parse(v)
+            ))
 
     def __repr__(self):
-        return f'<Changelog v{self.major}.{self.minor}.{self.patch}>'
-
-    @staticmethod
-    def _get_changelog_file_path(f_name: str) -> str:
-        """
-        Search for a Changelog file.
-
-        :param f_name: The file name of the Changelog to search for.
-        :rtype: str
-        :return: Full path of the Changelog file.
-        """
-        files = [filename for filename in os.listdir(os.getcwd()) if filename.lower() == f_name.lower()]
-        num_files = len(files)
-        if num_files > 1:
-            raise Exception(f'Found multiple Changelog files. {num_files} files found.')
-        elif num_files == 0:
-            raise Exception('No Changelog file found.')
-        return os.path.abspath(files[0])
-
-    def _get_most_recent_version(self) -> Tuple[int, int, int]:
-        """
-        Get the most recent version from the Changelog file.
-
-        :rtype: (int, int, int)
-        :return: Three ints, representing major, minor, and patch version numbers.
-        """
-        pattern = re.compile(self._version_title_re_pattern)
-        for line in self.full_text.splitlines():
-            match = pattern.match(line)
-            if match:
-                g = match.groups()
-                try:
-                    return int(g[0]), int(g[1]), int(g[2])
-                except ValueError:
-                    raise Exception('Invalid version number, could not convert to int.')
-
-    def bump(self, new_version: Tuple[int, int, int]) -> None:
-        """
-        Bump the Changelog version to `new_version` number. This method writes each line of the current Changelog file
-        to a temp file, writing new lines when needed, then moves the temp file to the same location as the current
-        Changelog file.
-
-        :param new_version: Tupble of new version major, minor, and patch numbers.
-        :return: None
-        """
-        unreleased_tag_pattern = re.compile(self._unreleased_tag_re_pattern)
-        unreleased_url_pattern = re.compile(self._unreleased_url_re_pattern)
-
-        # Read current file, write to temp file
-        with open(self.changelog_file_path) as f, NamedTemporaryFile(dir=".", delete=False) as out:
-            for line in f:
-                if unreleased_url_pattern.match(line):  # If this line matches the Unreleased diff URL pattern
-                    new_line = rreplace(
-                        s=line,
-                        old=self.format_version((self.major, self.minor, self.patch)),
-                        new=self.format_version(new_version),
-                        occurrence=1
-                    )
-                    out.write(new_line.encode())
-                    new_diff_url = self._version_diff_pattern.format(
-                        new_version=self.format_version(new_version, include_v=False),
-                        new_version_end=self.format_version(new_version),
-                        current_version=self.format_version((self.major, self.minor, self.patch)),
-                        base_url=re.search("(?P<url>https?://[^\\s]+)", line).group("url").rsplit('/', 1)[0]
-                    )
-                    out.write(f'{new_diff_url}\n'.encode())
-                elif unreleased_tag_pattern.match(line):  # If this line matches the Unreleased tag pattern
-                    out.write(f'{line}\n'.encode())
-                    out.write(
-                        f'## [{self.format_version(new_version, include_v=False)}] - {str(date.today())}\n'.encode())
-                else:  # Write the line as-is
-                    out.write(line.encode())
-        move(out.name, self.changelog_file_path)  # Move the temp file to the current Changelog file location
-        out.close()  # Close temp file
-
-    def copy_release_text(self, v: Union[LATEST, Tuple[int, int, int]] = LATEST) -> None:
-        """
-        Copy the requested version's release text to the clipboard.
-
-        :param v: The version to copy release text for.
-        :return: Nothing.
-        """
-        version: Tuple[int, int, int] = self._get_most_recent_version() if v == self.LATEST else v
-        save_lines = False  # Whether or not we should be saving lines
-        text = ''
-        pattern = re.compile(self._version_title_re_pattern)
-        with open(self.changelog_file_path) as f:
-            for line in f:  # Run through each line of the CHANGELOG
-                if save_lines:
-                    # Stop saving release text if the line matches the release title regex pattern
-                    if pattern.match(line):
-                        save_lines = False
-                    # Add the line to the release text we need to copy
-                    else:
-                        text += line
-                else:
-                    match = pattern.match(line)
-                    if match and parse_version_number(
-                            f'{match.groups()[0]}.{match.groups()[1]}.{match.groups()[2]}') == version:
-                        save_lines = True
-        if not text:
-            raise LookupError(f'Could not find version number {self.format_version(v, include_v=True)}')
-        pyperclip.copy(text.rstrip('\n '))
-        click.echo(f'{self.format_version(version, include_v=True)} release text copied to clipboard!')
-
-    def format_version(self, v: Tuple[int, int, int], include_v: bool = True) -> str:
-        """
-        Format a group of major, minor, and patch version numbers to the `MAJOR.MINOR.PATCH` format. Optionally prepend
-        the `v` character.
-
-        :param v: Tuple containing the major, minor, and patch version numbers.
-        :param include_v: Whether or not to include the starting `v` character.
-        :rtype: str
-        :return: Formatting version string.
-        """
-        v = self._version_pattern.format(*v)
-        return 'v' + v if include_v else v
+        return f'<CHANGELOG v{self.most_recent_version}>'
 
     @property
-    def available_new_versions(self) -> Dict[str, Tuple[int, int, int]]:
+    def most_recent_version(self) -> VersionInfo:
         """
-        Dictionary of possible new Changelog versions in the following format:
-            {VERSION_NUMBER: str, VERSION_TUPLE: Tuple[int, int, int]}
+        Get the most recent version of the CHANGELOG file.
+
+        :return: VersionInfo instance of most recent semver version.
+        """
+        return self.most_recent_release.version
+
+    @property
+    def most_recent_release(self) -> Release:
+        """
+        Get the most recent release of the CHANGELOG file
+
+        :return: Release instance for most recent release.
+        """
+        return self.releases[0]
+
+    def get_next_versions(self, prerelease_token='rc', build_token='build') -> Dict[str, VersionInfo]:
+        """
+        Get a dictionary of possible new Changelog versions.
 
         For example, if the current version of the Changelog is v3.6.3, the following dict will be returned:
         {
-            'v3.6.4': (3, 6, 4),
-            'v3.7.0': (3, 7, 0),
-            'v4.0.0': (4, 0, 0)
+            'v4.0.0': VersionInfo(major=4, minor=0, patch=0, prerelease=None, build=None),
+            'v3.7.0': VersionInfo(major=3, minor=7, patch=0, prerelease=None, build=None),
+            'v3.6.4': VersionInfo(major=3, minor=6, patch=4, prerelease=None, build=None),
+            'v3.6.3-rc.1': VersionInfo(major=3, minor=6, patch=3, prerelease='rc.1', build=None),
+            'v3.6.3+build.1': VersionInfo(major=3, minor=6, patch=3, prerelease=None, build='build.1'),
+            'v3.6.3-rc.1+build.1': VersionInfo(major=3, minor=6, patch=3, prerelease='rc.1', build='build.1')
         }
 
-        :rtype: dict
+        :param prerelease_token: String to identify prerelease versions, defaults to `rc`.
+        :param build_token: String to identify build versions, defaults to `build`.
         :return: Dictionary of possible new Changelog versions.
         """
-        return {self._version_pattern.format(*v): v for v in (self.new_patch, self.new_minor, self.new_major)}
+        versions = (
+            self.most_recent_version.bump_patch(),
+            self.most_recent_version.bump_minor(),
+            self.most_recent_version.bump_major(),
+            self.most_recent_version.bump_prerelease(prerelease_token),
+            self.most_recent_version.bump_build(build_token),
+            self.most_recent_version.bump_prerelease(prerelease_token).bump_build(build_token),
+        )
+        return {f'v{v}': v for v in versions}
 
-    @property
-    def new_major(self) -> Tuple[int, int, int]:
-        """Bump the Changelog major version."""
-        return self.major + 1, 0, 0
+    def bump(self, version: VersionInfo) -> None:
+        """
+        Bump the CHANGELOG to the specified version.
 
-    @property
-    def new_minor(self) -> Tuple[int, int, int]:
-        """Bump the Changelog minor version."""
-        return self.major, self.minor + 1, 0
+        :param version: The version which the CHANGELOG file should be bumped to.
+        """
+        unreleased_url_re_pattern: str = r'\[Unreleased\]:'
+        version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
 
-    @property
-    def new_patch(self) -> Tuple[int, int, int]:
-        """Bump the Changelog patch version."""
-        return self.major, self.minor, self.patch + 1
+        with click.open_file(self.path, mode='w') as f:
+            f.write(self._header_text)
+            new_body = self._body_text.replace('## [Unreleased]\n', f'## [Unreleased]\n\n## [{version}] -'
+                                                                    f' {date.today()}\n')
+            f.write(new_body)
+            unreleased_url_pattern = re.compile(unreleased_url_re_pattern)
+            for line in self._footer_text.splitlines(keepends=False):
+                if unreleased_url_pattern.match(line):
+                    new_line = rreplace(
+                        s=line,
+                        old=f'v{self.most_recent_version}',
+                        new=f'v{version}',
+                        occurrence=1
+                    )
+                    f.write(f'{new_line}\n')
+                    new_diff_url = version_diff_pattern.format(
+                        new_version=f'{version}',
+                        new_version_end=f'v{version}',
+                        current_version=f'{self.most_recent_version}',
+                        base_url=re.search("(?P<url>https?://[^\\s]+)", line).group("url").rsplit('/', 1)[0]
+                    )
+                    f.write(f'{new_diff_url}\n')
+                else:
+                    f.write(f'{line}\n')
+            f.write('\n')
