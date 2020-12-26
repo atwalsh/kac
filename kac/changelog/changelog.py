@@ -1,6 +1,6 @@
 import re
+from collections import OrderedDict
 from datetime import date, datetime
-from typing import Dict
 
 import click
 from semver import VersionInfo
@@ -79,15 +79,15 @@ class Changelog:
         """
         return self.releases[0]
 
-    def get_next_versions(self, prerelease_token='rc', build_token='build') -> Dict[str, VersionInfo]:
+    def get_next_versions(self, prerelease_token='rc', build_token='build') -> OrderedDict:
         """
         Get a dictionary of possible new Changelog versions.
 
         For example, if the current version of the Changelog is v3.6.3, the following dict will be returned:
         {
-            'v4.0.0': VersionInfo(major=4, minor=0, patch=0, prerelease=None, build=None),
-            'v3.7.0': VersionInfo(major=3, minor=7, patch=0, prerelease=None, build=None),
             'v3.6.4': VersionInfo(major=3, minor=6, patch=4, prerelease=None, build=None),
+            'v3.7.0': VersionInfo(major=3, minor=7, patch=0, prerelease=None, build=None),
+            'v4.0.0': VersionInfo(major=4, minor=0, patch=0, prerelease=None, build=None),
             'v3.6.3-rc.1': VersionInfo(major=3, minor=6, patch=3, prerelease='rc.1', build=None),
             'v3.6.3+build.1': VersionInfo(major=3, minor=6, patch=3, prerelease=None, build='build.1'),
             'v3.6.3-rc.1+build.1': VersionInfo(major=3, minor=6, patch=3, prerelease='rc.1', build='build.1')
@@ -95,7 +95,7 @@ class Changelog:
 
         :param prerelease_token: String to identify prerelease versions, defaults to `rc`.
         :param build_token: String to identify build versions, defaults to `build`.
-        :return: Dictionary of possible new Changelog versions.
+        :return: OrderedDict of possible new Changelog versions.
         """
         versions = (
             self.most_recent_version.bump_patch(),
@@ -105,7 +105,7 @@ class Changelog:
             self.most_recent_version.bump_build(build_token),
             self.most_recent_version.bump_prerelease(prerelease_token).bump_build(build_token),
         )
-        return {f'v{v}': v for v in versions}
+        return OrderedDict({f'v{v}': v for v in versions})
 
     def bump(self, version: VersionInfo) -> None:
         """
