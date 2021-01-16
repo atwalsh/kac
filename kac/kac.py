@@ -4,7 +4,7 @@ import click
 import pyperclip
 import questionary
 from jinja2 import Environment, PackageLoader
-from semver import parse_version_info as semver_parse
+from semver import VersionInfo
 
 from .changelog import Changelog
 
@@ -22,7 +22,7 @@ def cli():
               default=Changelog.default_file_name,
               type=click.Path(exists=True, dir_okay=False, writable=True, resolve_path=True), show_default=True)
 def copy(filename):
-    """Copy the latest release text."""
+    """Copy the latest release's changelog text."""
     changelog = Changelog(filename)
     pyperclip.copy(changelog.latest_release.changes_text)
     click.echo(f'v{changelog.latest_version} release text copied to clipboard!')
@@ -37,7 +37,7 @@ def copy(filename):
 @click.option('-b', '--build', 'build', help='The build identifier token.', default='build', type=click.STRING,
               show_default=True)
 def bump(filename, build, prerelease):
-    """Bump a Changelog."""
+    """Bump the latest version of a CHANGELOG file."""
     changelog = Changelog(filename)
     if not changelog.unreleased.has_changes:
         click.echo('CHANGELOG has no unreleased changes.')
@@ -87,7 +87,7 @@ def init(filename):
         first_v_num = first_v_num[1:]
     # Try to parse version using semver lib
     try:
-        version = semver_parse(first_v_num)
+        version = VersionInfo.parse(first_v_num)
     except ValueError:
         click.echo(f'Invalid Semantic Version number: {first_v_num}')
         raise click.Abort
