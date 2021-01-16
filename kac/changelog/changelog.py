@@ -45,10 +45,9 @@ class Changelog:
         self.unreleased = Unreleased(**Unreleased.changes_to_dict(m_unreleased.groups()[0].strip()))
 
         # Parse releases from the body section
-        self.releases = []
+        self.releases = []  # newest to oldest
         m_releases = re.findall(r'(?:## \[([\S]+)] - ([\d-]+)\s*)((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)?',
                                 self._body_text)
-        version_ids = [r[0] for r in m_releases]  # ex: ['Unreleased', '1.0.0', '0.9.0', ...]
         # Parse changes from each release
         for v, d, c in m_releases:  # type: str, str, str # version, date, changes
             c = c.strip()
@@ -59,21 +58,21 @@ class Changelog:
             ))
 
     def __repr__(self):
-        return f'<CHANGELOG v{self.most_recent_version}>'
+        return f'<CHANGELOG v{self.latest_version}>'
 
     @property
-    def most_recent_version(self) -> VersionInfo:
+    def latest_version(self) -> VersionInfo:
         """
         Get the most recent version of the CHANGELOG file.
 
         :return: VersionInfo instance of most recent semver version.
         """
-        return self.most_recent_release.version
+        return self.latest_release.version
 
     @property
-    def most_recent_release(self) -> Release:
+    def latest_release(self) -> Release:
         """
-        Get the most recent release of the CHANGELOG file
+        Get the most recent release of the CHANGELOG file.
 
         :return: Release instance for most recent release.
         """
@@ -98,35 +97,36 @@ class Changelog:
         :return: OrderedDict of possible new Changelog versions.
         """
         versions = (
-            self.most_recent_version.bump_patch(),
-            self.most_recent_version.bump_minor(),
-            self.most_recent_version.bump_major(),
-            self.most_recent_version.bump_prerelease(prerelease_token),
-            self.most_recent_version.bump_build(build_token),
-            self.most_recent_version.bump_prerelease(prerelease_token).bump_build(build_token),
+            self.latest_version.bump_patch(),
+            self.latest_version.bump_minor(),
+            self.latest_version.bump_major(),
+            self.latest_version.bump_prerelease(prerelease_token),
+            self.latest_version.bump_build(build_token),
+            self.latest_version.bump_prerelease(prerelease_token).bump_build(build_token),
         )
         return OrderedDict({f'v{v}': v for v in versions})
 
     def bump(self, version: VersionInfo) -> None:
         """
-        Bump the CHANGELOG to the specified version.
+        Bump the CHANGELOG to the specified version. Write the new CHANGELOG file text.
 
         :param version: The version which the CHANGELOG file should be bumped to.
         """
         unreleased_url_re_pattern: str = r'\[Unreleased\]:'
         version_diff_pattern: str = '[{new_version}]: {base_url}/{current_version}...{new_version_end}'
 
+        today = date.today()
         with click.open_file(self.path, mode='w') as f:
             f.write(self._header_text)
             new_body = self._body_text.replace('## [Unreleased]\n', f'## [Unreleased]\n\n## [{version}] -'
-                                                                    f' {date.today()}\n')
+                                                                    f' {today}\n')
             f.write(new_body)
             unreleased_url_pattern = re.compile(unreleased_url_re_pattern)
-            for line in self._footer_text.splitlines(keepends=False):
+            for idx, line in enumerate(self._footer_text.splitlines(keepends=False)):
                 if unreleased_url_pattern.match(line):
                     new_line = rreplace(
                         s=line,
-                        old=f'v{self.most_recent_version}',
+                        old=f'v{self.latest_version}',
                         new=f'v{version}',
                         occurrence=1
                     )
@@ -134,10 +134,24 @@ class Changelog:
                     new_diff_url = version_diff_pattern.format(
                         new_version=f'{version}',
                         new_version_end=f'v{version}',
-                        current_version=f'{self.most_recent_version}',
+                        current_version=f'{self.latest_version}',
                         base_url=re.search("(?P<url>https?://[^\\s]+)", line).group("url").rsplit('/', 1)[0]
                     )
-                    f.write(f'{new_diff_url}\n')
-                else:
-                    f.write(f'{line}\n')
-            f.write('\n')
+                    f.write(f'{new_diff_url}')
+                elif line.strip():
+                    f.write(f'{line}')
+                # if idx <= f
+                f.write('\n')
+
+        # Update self with new release and empty unreleased section
+        self.releases.insert(0, Release(
+            version,
+            today,
+            self.unreleased.added,
+            self.unreleased.changed,
+            self.unreleased.deprecated,
+            self.unreleased.fixed,
+            self.unreleased.removed,
+            self.unreleased.security
+        ))
+        self.unreleased = Unreleased()

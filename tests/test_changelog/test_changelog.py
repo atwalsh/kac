@@ -4,19 +4,27 @@ from pathlib import Path
 
 import pytest
 from click.exceptions import Abort
+from freezegun import freeze_time
 from semver import VersionInfo
 
-from kac.changelog import Changelog
+from kac.changelog import Changelog, Release
 
 
 class TestChangelog:
-    def test_init(self):
-        path = f'{Path(__file__).parent.resolve()}/test_changelog_file.md'
-        with open(path, 'r') as f:
+    @pytest.fixture
+    def test_changelog_path(self):
+        return f'{Path(__file__).parent.resolve()}/test_changelog_file.md'
+
+    @pytest.fixture(scope='function')
+    def test_changelog(self, test_changelog_path):
+        return Changelog(test_changelog_path)
+
+    def test_init(self, test_changelog, test_changelog_path):
+        with open(test_changelog_path, 'r') as f:
             expected_full_text = f.read()
 
-        c = Changelog(path)
-        assert c.path == path
+        c = Changelog(test_changelog_path)
+        assert c.path == test_changelog_path
 
         assert c.unreleased.has_changes
         assert c.unreleased.added == ['Something added']
@@ -30,19 +38,31 @@ class TestChangelog:
 
         assert c.full_text == expected_full_text
 
+    def test_repr(self, test_changelog):
+        assert test_changelog.__repr__() == f'<CHANGELOG v0.3.0>'
+
     def test_init_bad_path(self, tmp_path):
-        with pytest.raises(Abort) as e_info:
+        with pytest.raises(Abort):
             Changelog(str(tmp_path) + '/CHANGELOG.md')
 
-    def test_most_recent_version(self):
-        path = f'{Path(__file__).parent.resolve()}/test_changelog_file.md'
-        c = Changelog(path)
-        assert c.most_recent_release
+    def test_latest_version(self, test_changelog):
+        assert test_changelog.latest_version == VersionInfo(0, 3, 0)
 
-    def test_get_next_versions(self):
-        path = f'{Path(__file__).parent.resolve()}/test_changelog_file.md'
-        c = Changelog(path)
-        assert c.get_next_versions() == OrderedDict({
+    def test_latest_release(self, test_changelog):
+        r = Release(
+            VersionInfo(0, 3),
+            date(2020, 4, 5),
+            added=[
+                '`template` command',
+                'Initial basic tests with SemaphoreCI integration',
+                'Automatic releases to PyPI on git tags'
+            ],
+            changed=['Use poetry instead of pipenv'],
+        )
+        assert test_changelog.latest_release == r
+
+    def test_get_next_versions(self, test_changelog):
+        assert test_changelog.get_next_versions() == OrderedDict({
             'v0.3.1': VersionInfo(0, 3, 1),
             'v0.4.0': VersionInfo(0, 4),
             'v1.0.0': VersionInfo(1),
@@ -50,3 +70,43 @@ class TestChangelog:
             'v0.3.0+build.1': VersionInfo(0, 3, build='build.1'),
             'v0.3.0-rc.1+build.1': VersionInfo(0, 3, prerelease='rc.1', build='build.1'),
         })
+
+        assert test_changelog.get_next_versions(prerelease_token='pr', build_token='bo') == OrderedDict({
+            'v0.3.1': VersionInfo(0, 3, 1),
+            'v0.4.0': VersionInfo(0, 4),
+            'v1.0.0': VersionInfo(1),
+            'v0.3.0-pr.1': VersionInfo(0, 3, prerelease='pr.1'),
+            'v0.3.0+bo.1': VersionInfo(0, 3, build='bo.1'),
+            'v0.3.0-pr.1+bo.1': VersionInfo(0, 3, prerelease='pr.1', build='bo.1'),
+        })
+
+    @freeze_time('2021-01-16')
+    def test_bump(self, test_changelog_path, tmp_path):
+        c_path = tmp_path / 'CHANGELOG.md'
+        with open(test_changelog_path, 'r') as f:
+            c_path.write_text(f.read())
+        changelog = Changelog(str(c_path))
+        changelog_unr = changelog.unreleased  # Pre-bump unreleased changed
+
+        # Bump
+        assert changelog.latest_version == VersionInfo(0, 3)
+        changelog.bump(VersionInfo(0, 4))
+        assert changelog.latest_version == VersionInfo(0, 4)
+
+        # Check that the changelog's unreleased and releases were updated
+        assert not changelog.unreleased.has_changes
+
+        assert changelog.latest_release == Release(VersionInfo(0, 4), date(2021, 1, 16))
+        assert changelog.latest_release.changed == changelog_unr.changed
+        assert changelog.latest_release.added == changelog_unr.added
+        assert not any([
+            changelog.latest_release.deprecated,
+            changelog.latest_release.fixed,
+            changelog.latest_release.removed,
+            changelog.latest_release.security,
+        ])
+
+        # Verify bumped CHANGELOG text
+        bumped_path = f'{Path(__file__).parent.resolve()}/test_changelog_file_bumped.md'
+        with open(bumped_path, 'r') as expected_f, open(c_path, 'r') as actual_f:
+            assert expected_f.read() == actual_f.read()

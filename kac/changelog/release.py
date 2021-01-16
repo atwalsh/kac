@@ -22,7 +22,21 @@ class ReleaseBase:
         'security',
     )
 
-    def __init__(self, added: List, changed: List, deprecated: List, fixed: List, removed: List, security: List):
+    def __init__(self, added: List = None, changed: List = None, deprecated: List = None, fixed: List = None,
+                 removed: List = None, security: List = None):
+        if added is None:
+            added = []
+        if changed is None:
+            changed = []
+        if deprecated is None:
+            deprecated = []
+        if fixed is None:
+            fixed = []
+        if removed is None:
+            removed = []
+        if security is None:
+            security = []
+
         self.added = added
         self.changed = changed
         self.deprecated = deprecated
@@ -66,23 +80,24 @@ class ReleaseBase:
         for change_type, change_data in self.changes.items():  # type: str, str
             if not change_data:
                 continue
-            change_entries = ''
-            for cd in change_data:
-                change_entries += f'- {cd}\n'
+            change_entries = ''.join([f'- {cd}\n' for cd in change_data])
             data += f'### {change_type.capitalize()}\n{change_entries}\n'
 
         return data
 
 
 class Release(ReleaseBase):
-    def __init__(self, added: List, changed: List, deprecated: List, fixed: List, removed: List, security: List,
-                 version: VersionInfo, release_date: date):
+    def __init__(self, version: VersionInfo, release_date: date, added: List = None, changed: List = None,
+                 deprecated: List = None, fixed: List = None, removed: List = None, security: List = None):
         super(Release, self).__init__(added, changed, deprecated, removed, fixed, security)
         self.release_date = release_date
         self.version = version
 
     def __repr__(self):
         return f'<Release v{self.version} - {self.release_date}>'
+
+    def __eq__(self, other):
+        return self.version == other.version and self.release_date == other.release_date
 
 
 class Unreleased(ReleaseBase):

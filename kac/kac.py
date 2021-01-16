@@ -24,8 +24,8 @@ def cli():
 def copy(filename):
     """Copy the latest release text."""
     changelog = Changelog(filename)
-    pyperclip.copy(changelog.most_recent_release.changes_text)
-    click.echo(f'v{changelog.most_recent_version} release text copied to clipboard!')
+    pyperclip.copy(changelog.latest_release.changes_text)
+    click.echo(f'v{changelog.latest_version} release text copied to clipboard!')
 
 
 @cli.command()
@@ -47,16 +47,14 @@ def bump(filename, build, prerelease):
 
     # Ask user to select new version
     new_v_num: str = questionary.select(
-        message=f'Please select a new version (currently v{changelog.most_recent_version})',
+        message=f'Please select a new version (currently v{changelog.latest_version})',
         choices=[v_num for v_num in available_versions.keys()]
     ).ask()
     if new_v_num is None:
         raise click.Abort
     new_version = available_versions[new_v_num]
     # Confirm selected new version
-    should_bump: bool = questionary.confirm(
-        message=f'Bump Changelog to v{new_version}?'
-    ).ask()
+    should_bump: bool = questionary.confirm(message=f'Bump Changelog to v{new_version}?').ask()
     # Bump or end
     if not should_bump:
         raise click.Abort
