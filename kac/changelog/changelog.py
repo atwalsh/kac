@@ -134,7 +134,7 @@ class Changelog:
                     new_diff_url = version_diff_pattern.format(
                         new_version=f'{version}',
                         new_version_end=f'v{version}',
-                        current_version=f'{self.latest_version}',
+                        current_version=f'v{self.latest_version}',
                         base_url=re.search("(?P<url>https?://[^\\s]+)", line).group("url").rsplit('/', 1)[0]
                     )
                     f.write(f'{new_diff_url}')
