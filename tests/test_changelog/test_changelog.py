@@ -38,6 +38,19 @@ class TestChangelog:
 
         assert c.full_text == expected_full_text
 
+    def test_init_no_unreleased(self, test_changelog_path, tmp_path):
+        """Check a click `Abort` is raised if the CHANGELOG has no `Unreleased` section."""
+        path = tmp_path
+        f_path = path / 'CHANGELOG.md'
+        with open(test_changelog_path) as f:
+            lines = f.readlines()
+
+        # Remove released section by line numbers 😕
+        f_path.write_text(''.join([l for idx, l in enumerate(lines) if idx not in range(5, 12)]))
+
+        with pytest.raises(Abort):
+            Changelog(str(f_path))
+
     def test_repr(self, test_changelog):
         assert test_changelog.__repr__() == f'<CHANGELOG v0.3.0>'
 

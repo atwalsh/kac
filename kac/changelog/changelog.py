@@ -34,13 +34,13 @@ class Changelog:
 
         # Parse CHANGELOG header, body, and footer
         m_file = re.fullmatch(r'([\s\S]+)(## \[Unreleased][\s\S]+)(\[Unreleased]:[\s\S]+)', self.full_text)
+        if m_file is None:
+            click.echo('Unable to parse CHANGELOG, most likely due to a missing `Unreleased` section.')
+            raise click.Abort
         self._header_text, self._body_text, self._footer_text = m_file.groups()  # type: str, str, str
 
         # Parse Unreleased section
         m_unreleased = re.match(r'## \[Unreleased]\n((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)', self._body_text)
-        if m_unreleased is None:
-            click.echo('Unable to match CHANGELOG `Unreleased` section.')
-            raise click.Abort
         # if m_unreleased.groups()[0].strip() != '':
         self.unreleased = Unreleased(**Unreleased.changes_to_dict(m_unreleased.groups()[0].strip()))
 
