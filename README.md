@@ -30,5 +30,6 @@ Commands:
 
 - Must be run in the same directory as your CHANGELOG file
 - Only works for semver
+- `kac bump` can "format" (ex: remove extra empty lines) CHANGELOG files, this could be unfavorable for users
 
 [1]: https://keepachangelog.com/en/1.0.0/
