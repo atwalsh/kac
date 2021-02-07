@@ -140,7 +140,6 @@ class Changelog:
                     f.write(f'{new_diff_url}')
                 elif line.strip():
                     f.write(f'{line}')
-                # if idx <= f
                 f.write('\n')
 
         # Update self with new release and empty unreleased section
