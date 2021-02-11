@@ -18,8 +18,13 @@ class TestInit:
         mock_text.ask = sf_mock
         monkeypatch.setattr('questionary.text', lambda *args, **kwargs: mock_text)
         with runner.isolated_filesystem() as iso:
-            res = runner.invoke(init)
-            assert res.output == f'Created CHANGELOG file at: /private{iso}/CHANGELOG.md\n'
+            res = runner.invoke(init, args=['-f', f'{iso}/CHANGELOG.md'])
+
+            try:
+                assert res.output == f'Created CHANGELOG file at: {iso}/CHANGELOG.md\n'
+            except AssertionError:
+                # For some reason, the path on macOS is prepended with `/private`
+                assert res.output == f'Created CHANGELOG file at: /private{iso}/CHANGELOG.md\n'
 
             with open('CHANGELOG.md') as new_f, open(expected_path) as expected:
                 assert new_f.read() == expected.read()
