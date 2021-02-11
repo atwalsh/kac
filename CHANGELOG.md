@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - `template` command to `new`
+- Use semver library to parse versions
 
 ## [0.3.0] - 2020-04-05
 ### Added
