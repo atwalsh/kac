@@ -11,14 +11,6 @@ from kac.changelog import Changelog, Release
 
 
 class TestChangelog:
-    @pytest.fixture
-    def test_changelog_path(self):
-        return f'{Path(__file__).parent.resolve()}/test_changelog_file.md'
-
-    @pytest.fixture(scope='function')
-    def test_changelog(self, test_changelog_path):
-        return Changelog(test_changelog_path)
-
     def test_init(self, test_changelog, test_changelog_path):
         with open(test_changelog_path, 'r') as f:
             expected_full_text = f.read()
@@ -120,6 +112,6 @@ class TestChangelog:
         ])
 
         # Verify bumped CHANGELOG text
-        bumped_path = f'{Path(__file__).parent.resolve()}/test_changelog_file_bumped.md'
+        bumped_path = f'{Path(__file__).parent.parent.resolve()}/files/test_changelog_file_bumped.md'
         with open(bumped_path, 'r') as expected_f, open(c_path, 'r') as actual_f:
             assert expected_f.read() == actual_f.read()
