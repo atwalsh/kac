@@ -1,9 +1,14 @@
+import pytest
 from click.testing import CliRunner
 
 from kac.kac import copy
 
 
 class TestCopy:
+    @pytest.fixture(autouse=True)
+    def mock_pyperclip(self, monkeypatch):
+        monkeypatch.setattr('pyperclip.copy', lambda *args, **kwargs: None)
+
     def test_no_args(self, test_changelog_path):
         runner = CliRunner()
         with open(test_changelog_path) as f:
