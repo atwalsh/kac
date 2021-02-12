@@ -5,6 +5,8 @@ homepage = "https://github.com/atwalsh/kac"
 license = "MIT"
 name = "kac"
 version = "0.3.0"
+readme = "README.md"
+repository = "https://github.com/atwalsh/kac"
 
 [tool.poetry.dependencies]
 click = "^7.1.1"
