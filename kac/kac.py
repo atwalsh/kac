@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 import click
 import pyperclip
@@ -104,7 +105,8 @@ def init(filename):
     env = Environment(loader=PackageLoader('kac', 'templates'), )
     changelog_template = env.get_template('CHANGELOG.md')
     # Render the template with user input
-    new_file_text = changelog_template.render(initial_release=version, repo_url=github_repo_url)
+    new_file_text = changelog_template.render(initial_release=version, repo_url=github_repo_url,
+                                              initial_release_date=date.today())
 
     # Write the new CHANGELOG file
     try:

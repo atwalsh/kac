@@ -41,7 +41,6 @@ class Changelog:
 
         # Parse Unreleased section
         m_unreleased = re.match(r'## \[Unreleased]\n((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)', self._body_text)
-        # if m_unreleased.groups()[0].strip() != '':
         self.unreleased = Unreleased(**Unreleased.changes_to_dict(m_unreleased.groups()[0].strip()))
 
         # Parse releases from the body section
