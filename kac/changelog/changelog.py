@@ -40,7 +40,7 @@ class Changelog:
         self._header_text, self._body_text, self._footer_text = m_file.groups()  # type: str, str, str
 
         # Parse Unreleased section
-        m_unreleased = re.match(r'## \[Unreleased]\n((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)', self._body_text)
+        m_unreleased = re.match(r'## \[Unreleased]\n+((?:### \w+[\n\s]*(?:-[ \S]*[\s]+)*)*)', self._body_text)
         self.unreleased = Unreleased(**Unreleased.changes_to_dict(m_unreleased.groups()[0].strip()))
 
         # Parse releases from the body section
