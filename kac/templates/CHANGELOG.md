@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [{{initial_release}}]
+## [{{initial_release}}] - {{initial_release_date}}
 
 
 [Unreleased]: {{repo_url}}/compare/v{{initial_release}}...HEAD

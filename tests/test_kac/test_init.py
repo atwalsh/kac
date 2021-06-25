@@ -2,11 +2,13 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from click.testing import CliRunner
+from freezegun import freeze_time
 
 from kac.kac import init
 
 
 class TestInit:
+    @freeze_time("2021-06-12")
     def test_creation(self, monkeypatch):
         runner = CliRunner()
         expected_path = f'{Path(__file__).parent.parent.resolve()}/files/test_init_file.md'
