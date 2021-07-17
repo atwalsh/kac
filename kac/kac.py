@@ -6,7 +6,7 @@ import pyperclip
 import questionary
 from jinja2 import Environment, PackageLoader
 from semver import VersionInfo
-
+from .util import get_first_git_remote
 from .changelog import Changelog
 
 
@@ -96,7 +96,7 @@ def init(filename):
     # Ask the user for their GitHub repository URL
     github_repo_url: str = questionary.text(
         message='Enter Repository URL',
-        default='https://github.com/atwalsh/kac',
+        default=get_first_git_remote() or 'https://github.com/atwalsh/kac',
     ).ask()
     if github_repo_url is None:
         raise click.Abort
