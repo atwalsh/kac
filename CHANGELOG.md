@@ -6,8 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Try to parse the first git remote URL from `.git/config` when generating CHANGELOG 
-  files with `kac init`
+- Try to parse the first git remote URL from `.git/config` when generating CHANGELOG files with `kac init`
 
 ### Fixed
 - `kac init` did not include a date for the first release when generating new CHANGELOG files
