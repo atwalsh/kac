@@ -4,7 +4,7 @@ description = "A command line tool for CHANGELOG files that follow the Keep-a-Ch
 homepage = "https://github.com/atwalsh/kac"
 license = "MIT"
 name = "kac"
-version = "0.4.0"
+version = "0.4.1"
 readme = "README.md"
 repository = "https://github.com/atwalsh/kac"
 
