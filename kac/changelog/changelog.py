@@ -33,7 +33,7 @@ class Changelog:
             raise click.Abort
 
         # Parse CHANGELOG header, body, and footer
-        m_file = re.fullmatch(r'([\s\S]+)(## \[Unreleased][\s\S]+)(\[Unreleased]:[\s\S]+)', self.full_text)
+        m_file = re.fullmatch(r'([\s\S]+\n)(## \[Unreleased][\s\S]+)(\[Unreleased]:[\s\S]+)', self.full_text)
         if m_file is None:
             click.echo('Unable to parse CHANGELOG, most likely due to a missing `Unreleased` section.')
             raise click.Abort

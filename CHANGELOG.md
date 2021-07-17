@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `kac init` did not include a date for the first release when generating new CHANGELOG files
 - Update unreleased regex pattern to allow for an extra newline below `## [Unreleased]`
+- Regex pattern match when the CHANGELOG included an `## [Unreleased]` section
 
 ## [0.4.0] - 2021-02-11
 ### Changed
