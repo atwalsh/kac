@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Try to parse the first git remote URL from `.git/config` when generating CHANGELOG 
+  files with `kac init`
+
 ### Fixed
 - `kac init` did not include a date for the first release when generating new CHANGELOG files
 - Update unreleased regex pattern to allow for an extra newline below `## [Unreleased]`
