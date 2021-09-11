@@ -6,14 +6,15 @@ import pyperclip
 import questionary
 from jinja2 import Environment, PackageLoader
 from semver import VersionInfo
-from .util import get_first_git_remote
+
 from .changelog import Changelog
+from .util import get_first_git_remote
 
 
 @click.group()
 def cli():
     """
-    A CLI tool for CHANGELOG files that follow the Keep-a-Changelog standard.
+    Python and  CLI tool for CHANGELOG files that follow the Keep a Changelog standard.
     """
     pass
 
@@ -30,38 +31,45 @@ def copy(filename):
 
 
 @cli.command()
-@click.option('-f', '--filename', 'filename', help='The filename of the CHANGELOG file to be created.',
+@click.option('-f', '--filename', 'filename', help='The filename of the CHANGELOG file to be bumped.',
               default=Changelog.default_file_name,
               type=click.Path(exists=True, dir_okay=False, writable=True, resolve_path=True), show_default=True)
-@click.option('-p', '--pre-release', 'prerelease', help='The prerelease identifier token.', default='rc',
+@click.option('--pre-release', 'prerelease', help='The prerelease identifier token.', default='rc',
               type=click.STRING, show_default=True)
-@click.option('-b', '--build', 'build', help='The build identifier token.', default='build', type=click.STRING,
+@click.option('--build', 'build', help='The build identifier token.', default='build', type=click.STRING,
               show_default=True)
-def bump(filename, build, prerelease):
+@click.option('-t', '--type', 'bump_type', help='The version part to be bumped.',
+              type=click.Choice(choices=['major', 'minor', 'patch', 'prerelease', 'build']))
+def bump(filename, build, prerelease, bump_type):
     """Bump the latest version of a CHANGELOG file."""
     changelog = Changelog(filename)
     if not changelog.unreleased.has_changes:
         click.echo('CHANGELOG has no unreleased changes.')
         raise click.Abort
 
-    available_versions = changelog.get_next_versions(prerelease, build)
-
-    # Ask user to select new version
-    new_v_num: str = questionary.select(
-        message=f'Please select a new version (currently v{changelog.latest_version})',
-        choices=[v_num for v_num in available_versions.keys()]
-    ).ask()
-    if new_v_num is None:
-        raise click.Abort
-    new_version = available_versions[new_v_num]
-    # Confirm selected new version
-    should_bump: bool = questionary.confirm(message=f'Bump Changelog to v{new_version}?').ask()
-    # Bump or end
-    if not should_bump:
-        raise click.Abort
+    if bump_type:
+        # `build` token currently not supported by VersionInfo.next_version
+        if bump_type == 'build':
+            new_version = changelog.latest_version.bump_build(build)
+        else:
+            new_version = changelog.latest_version.next_version(bump_type, prerelease_token=prerelease)
+    else:
+        available_versions = changelog.get_next_versions(prerelease, build)
+        # Ask user to select new version
+        new_v_num: str = questionary.select(
+            message=f'Please select a new version (currently v{changelog.latest_version})',
+            choices=[v_num for v_num in available_versions.keys()]
+        ).ask()
+        if new_v_num is None:
+            raise click.Abort
+        new_version = available_versions[new_v_num]
+        # Confirm selected new version
+        should_bump: bool = questionary.confirm(message=f'Bump Changelog to v{new_version}?').ask()
+        # Bump or end
+        if not should_bump:
+            raise click.Abort
 
     changelog.bump(new_version)
-
     click.echo(f'Bumped to v{new_version}!')
 
 
@@ -75,7 +83,6 @@ def init(filename):
     if os.path.isfile(filename):
         click.echo(f'The CHANGELOG file already exists!')
         raise click.Abort
-
     # Ask the user for the initial version of their project
     first_v_num: str = questionary.text(
         message='Enter your first version number',
