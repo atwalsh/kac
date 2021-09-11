@@ -1,10 +1,10 @@
 [tool.poetry]
 authors = ["Adam Walsh <adam@atw.me>"]
-description = "A command line tool for CHANGELOG files that follow the Keep-a-Changelog standard."
+description = "Python and CLI tool for CHANGELOG files that follow the Keep a Changelog standard."
 homepage = "https://github.com/atwalsh/kac"
 license = "MIT"
 name = "kac"
-version = "0.4.1"
+version = "0.5.0"
 readme = "README.md"
 repository = "https://github.com/atwalsh/kac"
 
