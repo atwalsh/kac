@@ -39,7 +39,7 @@ def copy(filename):
 @click.option('--build', 'build', help='The build identifier token.', default='build', type=click.STRING,
               show_default=True)
 @click.option('-t', '--type', 'bump_type', help='The version part to be bumped.',
-              type=click.Choice(choices=['major', 'minor', 'patch', 'pre', 'build']))
+              type=click.Choice(choices=['major', 'minor', 'patch', 'prerelease', 'build']))
 def bump(filename, build, prerelease, bump_type):
     """Bump the latest version of a CHANGELOG file."""
     changelog = Changelog(filename)
@@ -47,7 +47,6 @@ def bump(filename, build, prerelease, bump_type):
         click.echo('CHANGELOG has no unreleased changes.')
         raise click.Abort
 
-    available_versions = changelog.get_next_versions(prerelease, build)
     if bump_type:
         # `build` token currently not supported by VersionInfo.next_version
         if bump_type == 'build':
@@ -55,6 +54,7 @@ def bump(filename, build, prerelease, bump_type):
         else:
             new_version = changelog.latest_version.next_version(bump_type, prerelease_token=prerelease)
     else:
+        available_versions = changelog.get_next_versions(prerelease, build)
         # Ask user to select new version
         new_v_num: str = questionary.select(
             message=f'Please select a new version (currently v{changelog.latest_version})',
