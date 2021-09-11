@@ -14,7 +14,7 @@ from .util import get_first_git_remote
 @click.group()
 def cli():
     """
-    A CLI tool for CHANGELOG files that follow the Keep-a-Changelog standard.
+    Python and  CLI tool for CHANGELOG files that follow the Keep a Changelog standard.
     """
     pass
 
@@ -39,7 +39,7 @@ def copy(filename):
 @click.option('--build', 'build', help='The build identifier token.', default='build', type=click.STRING,
               show_default=True)
 @click.option('-t', '--type', 'bump_type', help='The version part to be bumped.',
-              type=click.Choice(choices=Changelog.bump_types))
+              type=click.Choice(choices=['major', 'minor', 'patch', 'pre', 'build']))
 def bump(filename, build, prerelease, bump_type):
     """Bump the latest version of a CHANGELOG file."""
     changelog = Changelog(filename)
