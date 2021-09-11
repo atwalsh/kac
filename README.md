@@ -1,20 +1,23 @@
-![kac](https://atw.me/img/kac.svg)
+# kac
 
-<hr>
+Python and CLI tool for CHANGELOG files that follow the [Keep a Changelog][1] standard.
 
-A command line tool for CHANGELOG files that follow the [Keep A Changelog][1] standard.
+## Installation
 
-![Tests](https://github.com/atwalsh/kac/workflows/Tests/badge.svg)
+```console
+pip install kac
+```
 
-### Usage
+## CLI
 
 Run `kac` in the same directory as your Changelog. By default, `kac` looks for a file called `CHANGELOG.md`
 (case-insensitive).
 
-```
+```console
 Usage: kac [OPTIONS] COMMAND [ARGS]...
 
-  A CLI tool for CHANGELOG files that follow the Keep-a-Changelog standard.
+  Python and  CLI tool for CHANGELOG files that follow the Keep a Changelog
+  standard.
 
 Options:
   --help  Show this message and exit.
@@ -23,7 +26,7 @@ Commands:
   bump  Bump the latest version of a CHANGELOG file.
   copy  Copy the latest release's changelog text.
   init  Create an empty CHANGELOG file.
-  
+
 ```
 
 ## Limitations
