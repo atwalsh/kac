@@ -65,7 +65,7 @@ class ReleaseBase:
         :return: Dictionary of change types and changes.
         """
         data = {v: [] for v in cls.CHANGE_TYPES}
-        for change_type, change_data in re.findall(r'### (\S+)\n+((?:- (?:.*)\n*)+)\s*',
+        for change_type, change_data in re.findall(r'### (\S+) *\n+((?:- (?:.*)\n*)+)\s*',
                                                    changes_text.strip()):  # type: str, str
             change_data = change_data.strip()
             if change_type.lower() not in Release.CHANGE_TYPES:
