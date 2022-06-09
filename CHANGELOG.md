@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Allow for extra whitespace after change type
+- Lock `markupsafe` to version `2.0.1`
 
 ## [0.5.0] - 2021-09-11
 ### Added
