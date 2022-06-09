@@ -29,6 +29,30 @@ Commands:
 
 ```
 
+## API
+
+### Changelog
+
+Create a `Changelog` object:
+```python
+>>> from kac.changelog import Changelog
+>>> Changelog('CHANGELOG.md')
+<CHANGELOG v0.5.0>
+```
+
+Interact with a `Changelog`:
+```python
+>>> from kac.changelog import Changelog
+>>> changelog = Changelog('/path/to/CHANGELOG.md')
+>>> changelog.latest_version
+VersionInfo(major=0, minor=5, patch=0, prerelease=None, build=None)
+
+>>> changelog.latest_release
+<Release v0.5.0 - 2021-09-11>
+
+>>> changelog.latest_release.added # Get a list of changes for latest release
+['`-t/--type` option for `bump` command']
+```
 ## Limitations
 
 - Must be run in the same directory as your CHANGELOG file
